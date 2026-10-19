@@ -1,0 +1,11 @@
+models:
+  - name: stg_stripe__payments
+    columns:
+      - name: id
+      - name: order_id
+      - name: payment_method
+      - name: status
+      - name: amount
+        description: Payment amount in dollars.
+      - name: created 
+      - name: _batched_at
