@@ -1,5 +1,5 @@
 -- several payments can be performed regarding the same order_id (think 'refunds')
--- therefore the total amount for a given order must be >=
+-- therefore the total amount for a given order must be >= 0.
 select
     order_id
     , sum(amount) as total_amount
