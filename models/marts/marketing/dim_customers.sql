@@ -14,7 +14,7 @@ customer_orders as (
         max(order_date) as most_recent_order_date,
         count(order_id) as number_of_orders,
         sum(amount) as lifetime_value
-    from orders as o
+    from orders
     group by 1
 
 ),
@@ -22,15 +22,15 @@ customer_orders as (
 final as (
 
     select
-        customers.customer_id,
-        customers.first_name,
-        customers.last_name,
-        customer_orders.first_order_date,
-        customer_orders.most_recent_order_date,
-        coalesce(customer_orders.number_of_orders, 0) as number_of_orders,
-        customer_orders.lifetime_value,
-    from customers
-    left join customer_orders using (customer_id)
+        c.customer_id,
+        c.first_name,
+        c.last_name,
+        co.first_order_date,
+        co.most_recent_order_date,
+        co.lifetime_value,
+        coalesce(co.number_of_orders, 0) as number_of_orders
+    from customers as c
+    left join customer_orders as co on (c.customer_id = co.customer_id)
 )
 
 select * from final
