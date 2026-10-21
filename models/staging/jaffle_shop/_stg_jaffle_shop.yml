@@ -31,7 +31,7 @@ models:
         description: Date when order was placed.
         data_tests:
           - not_null
-      - name: status
+      - name: order_status
         description: '{{ doc("order_status") }}'
         data_tests:
           - accepted_values: 
