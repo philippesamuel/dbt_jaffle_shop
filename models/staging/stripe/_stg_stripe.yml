@@ -12,6 +12,10 @@ models:
           Assumption: No payment should be performed without an order_id.
         data_tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_jaffle_shop__orders')
+                field: order_id
       - name: payment_method
         data_tests:
           - accepted_values:
