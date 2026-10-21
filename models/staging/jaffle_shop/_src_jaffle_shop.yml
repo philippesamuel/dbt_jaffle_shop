@@ -1,11 +1,14 @@
 sources:
   - name: jaffle_shop
+    description: A clone of a Postgres database.
     database: raw
     schema: jaffle_shop
     tables:
       - name: customers
+        description: Raw customers data.
         columns:
           - name: id
+            description: Customer primary key.
             data_tests:
               - unique
               - not_null
@@ -36,11 +39,11 @@ sources:
                     to: source('jaffle_shop', 'customers')
                     field: id
           - name: order_date
-            description: "Date when order was placed."
+            description: Date when order was placed.
             data_tests:
               - not_null
           - name: status
-            description: "Current fulfillmet status of the order."
+            description: Current fulfillmet status of the order.
             data_tests:
               - accepted_values: 
                   arguments:
