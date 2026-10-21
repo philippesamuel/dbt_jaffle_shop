@@ -11,7 +11,7 @@ order_payments as (
         order_id,
         sum(amount) as amount
     from payments
-    where status = 'success'
+    where payment_status = 'success'
     group by 1
 ),
 

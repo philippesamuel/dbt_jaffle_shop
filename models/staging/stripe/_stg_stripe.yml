@@ -1,11 +1,10 @@
 models:
   - name: stg_stripe__payments
     columns:
-      - name: id
+      - name: payment_id
       - name: order_id
       - name: payment_method
-      - name: status
+      - name: payment_status
       - name: amount
         description: Payment amount in dollars.
-      - name: created 
-      - name: _batched_at
+      - name: created_at

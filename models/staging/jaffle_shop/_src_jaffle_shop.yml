@@ -43,7 +43,7 @@ sources:
             data_tests:
               - not_null
           - name: status
-            description: Current fulfillmet status of the order.
+            description: '{{ doc("order_status") }}'
             data_tests:
               - accepted_values: 
                   arguments:
