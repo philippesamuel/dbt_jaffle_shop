@@ -2,9 +2,26 @@ models:
   - name: stg_stripe__payments
     columns:
       - name: payment_id
+        description: Payment primary key.
+        data_tests:
+          - unique
+          - not_null
       - name: order_id
+        description: >
+          Order foreign key. Many payments can reference the same order_id (e.g. in case of returns/refunds).
+          Assumption: No payment should be performed without an order_id.
+        data_tests:
+          - not_null
       - name: payment_method
+        data_tests:
+          - accepted_values:
+              arguments: 
+                values: ['credit_card', 'coupon', 'bank_transfer', 'gift_card']
       - name: payment_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['success', 'fail']
       - name: amount
         description: Payment amount in dollars.
       - name: created_at
