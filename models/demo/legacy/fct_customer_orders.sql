@@ -14,10 +14,10 @@ raw_payments as (
 
 payments_per_order as (
 select 
-    order_id as order_id, 
-    max(created) as payment_finalized_date, 
-    sum(amount) / 100.0 as total_amount_paid
-from raw_payments
+    payments.order_id as order_id, 
+    max(payments.created) as payment_finalized_date, 
+    sum(payments.amount) / 100.0 as total_amount_paid
+from raw_payments as payments
 where status <> 'fail'
 group by 1
 ),
@@ -28,12 +28,12 @@ select
     orders.user_id as customer_id,
     orders.order_date as order_placed_at,
     orders.status as order_status,
-    payments_per_order.total_amount_paid,
-    payments_per_order.payment_finalized_date,
+    payments.total_amount_paid,
+    payments.payment_finalized_date,
     raw_customers.first_name as customer_first_name,
     raw_customers.last_name as customer_last_name
 from raw_orders as orders
-left join payments_per_order on (orders.id = payments_per_order.order_id)
+left join payments_per_order as payments on (orders.id = payments.order_id)
 left join raw_customers on (orders.user_id = raw_customers.id)
 ),
 
@@ -52,12 +52,12 @@ order by paid_orders.order_id
 
 customer_orders as (
 select 
-    raw_customers.id as customer_id, 
-    min(order_date) as first_order_date, 
-    max(order_date) as most_recent_order_date, 
+    customers.id as customer_id, 
+    min(orders.order_date) as first_order_date, 
+    max(orders.order_date) as most_recent_order_date, 
     count(orders.id) as number_of_orders
-from raw_customers
-left join raw_orders as orders on (orders.user_id = raw_customers.id)
+from raw_customers as customers
+left join raw_orders as orders on (orders.user_id = customers.id)
 group by 1    
 ),
 
@@ -65,7 +65,7 @@ final as (
 select
     paid_orders.*,
     row_number() over (order by paid_orders.order_id) as transaction_seq,
-    row_number() over (partition by customer_id order by paid_orders.order_id) as customer_sales_seq,
+    row_number() over (partition by paid_orders.customer_id order by paid_orders.order_id) as customer_sales_seq,
     (
         case when customer_orders.first_order_date = paid_orders.order_placed_at
             then 'new'
@@ -75,7 +75,7 @@ select
     x.clv_bad as customer_lifetime_value,
     customer_orders.first_order_date as fdos
 from paid_orders
-left join customer_orders on (customer_id)
+left join customer_orders using (customer_id)
 left outer join x on (x.order_id = paid_orders.order_id)
 order by order_id
 )
