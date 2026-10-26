@@ -23,8 +23,8 @@ final as (
 
     select
         c.customer_id,
-        c.first_name,
-        c.last_name,
+        c.customer_first_name,
+        c.customer_last_name,
         co.first_order_date,
         co.most_recent_order_date,
         co.lifetime_value,
