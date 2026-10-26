@@ -19,7 +19,7 @@ select
     orders.order_status,
     row_number() over (order by orders.order_id) as transaction_seq,
     row_number() over (partition by orders.customer_id order by orders.order_id) as customer_sales_seq,
-    -- window function to detect whether an order is new or a return
+    -- new or a returning customer?
     ( 
         case 
         when (
@@ -30,7 +30,7 @@ select
         ) then 'new' else 'return' 
         end
     ) as nvsr,
-    -- calculate first order date for a specific order
+    -- calculate first day of sale
     min(orders.order_date) over (
         partition by orders.customer_id
     ) as fdos
@@ -39,9 +39,9 @@ from orders
 
 payments_per_order as (
 select 
-    payments.order_id,
-    max(payments.created_at) as payment_finalized_date, 
-    sum(payments.amount) as total_amount_paid
+    order_id,
+    max(created_at) as payment_finalized_date, 
+    sum(payment_amount) as total_amount_paid
 from payments
 where payment_status <> 'fail'
 group by 1
@@ -65,7 +65,7 @@ select
     customers.customer_first_name,
     customers.customer_last_name,
 
-    -- calculate cumulative sum spent by customer (i.e. customer's lifetime value)
+    -- cumulative sum spent by customer (i.e. customer's lifetime value)
     sum(payments.total_amount_paid) over (
         partition by orders_ranked.customer_id
         order by orders_ranked.order_date, orders_ranked.order_id
@@ -78,19 +78,19 @@ left join customers on (orders_ranked.customer_id = customers.customer_id)
 -- Final CTE 
 final as (
 select
-    paid_orders.order_id,
-    paid_orders.customer_id,
-    paid_orders.order_date,
-    paid_orders.order_status,
-    paid_orders.transaction_seq,
-    paid_orders.customer_sales_seq,
-    paid_orders.nvsr,
-    paid_orders.fdos,
-    paid_orders.total_amount_paid,
-    paid_orders.payment_finalized_date,
-    paid_orders.customer_first_name,
-    paid_orders.customer_last_name,
-    paid_orders.customer_lifetime_value  
+    order_id,
+    customer_id,
+    order_date,
+    order_status,
+    total_amount_paid,
+    payment_finalized_date,
+    transaction_seq,
+    customer_sales_seq,
+    nvsr,
+    fdos,
+    customer_first_name,
+    customer_last_name,
+    customer_lifetime_value  
 from paid_orders
 )
 

@@ -10,7 +10,7 @@ transformed as (
         payment_method, 
         status as payment_status,
         -- amount stored in cents, convert to dollars
-        round(amount / 100.0, 2) as amount, 
+        round(amount / 100.0, 2) as payment_amount, 
         created as created_at
     from raw
 )
