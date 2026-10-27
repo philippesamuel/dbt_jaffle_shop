@@ -1,3 +1,8 @@
+{% set customer_window %}
+    partition by paid_orders.customer_id
+    order by paid_orders.order_date, paid_orders.order_id
+{% endset %}
+
 with 
 
 customers as (
@@ -11,55 +16,55 @@ paid_orders as (
 
 ),
 
-final as (
+customer_orders as (
 
     select
-        paid_orders.order_id,
-        paid_orders.customer_id,
-        paid_orders.order_date,
-        paid_orders.order_status,
-        paid_orders.total_amount_paid,
-        paid_orders.payment_finalized_date,
+        paid_orders.*,
         customers.customer_first_name,
         customers.customer_last_name,
-
         -- sales transaction sequence
         row_number() over (
             order by paid_orders.order_date, paid_orders.order_id
             ) as transaction_seq,
         
         -- customer sales sequence
-        row_number() over (
-            partition by paid_orders.customer_id
-            order by paid_orders.order_date, paid_orders.order_id
-            ) as customer_sales_seq,
-
-        -- new or returning customer?
-        ( 
-            case 
-            when (
-            rank() over (
-            partition by paid_orders.customer_id
-            order by paid_orders.order_date, paid_orders.order_id
-                ) = 1
-            ) then 'new' else 'return' 
-            end
-        ) as nvsr,
+        row_number() over ({{ customer_window }}) as customer_sales_seq,
 
         -- cumulative sum spent by customer (i.e. customer's lifetime value)
-        sum(paid_orders.total_amount_paid) over (
-            partition by paid_orders.customer_id
-            order by paid_orders.order_date, paid_orders.order_id
-        ) as customer_lifetime_value,
+        sum(paid_orders.total_amount_paid) over ({{ customer_window }}) as customer_lifetime_value,
         
         -- first day of sale
-        first_value(paid_orders.order_date) over (
-            partition by paid_orders.customer_id
-            order by paid_orders.order_date, paid_orders.order_id
-        ) as fdos
-  
+        first_value(paid_orders.order_date) over ({{ customer_window }}) as fdos
     from paid_orders
-    left join customers on (paid_orders.customer_id = customers.customer_id)
+    inner join customers on (paid_orders.customer_id = customers.customer_id)
+
+),
+
+final as (
+
+    select
+        order_id,
+        customer_id,
+        order_date as order_placed_at,
+        order_status,
+        total_amount_paid,
+        payment_finalized_date,
+
+        customer_first_name,
+        customer_last_name,
+
+        transaction_seq,
+        customer_sales_seq,
+
+        -- new or returning customer?
+        case when customer_sales_seq = 1 
+            then 'new' 
+            else 'return' 
+        end as nvsr,
+
+        customer_lifetime_value,
+        fdos
+    from customer_orders
 
 )
 
