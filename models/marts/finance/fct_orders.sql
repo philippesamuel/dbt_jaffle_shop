@@ -1,3 +1,10 @@
+{{
+    config(
+        materialized='incremental',
+        unique_key='order_id',
+        incremental_strategy='merge'
+    )
+}}
 with orders as (
     select * from {{ ref('stg_jaffle_shop__orders') }}
 ),
@@ -20,9 +27,18 @@ final as (
         o.order_id,
         o.customer_id,
         o.order_date,
-        coalesce(p.total_order_amount, 0) as total_order_amount
+        coalesce(p.total_order_amount, 0) as total_order_amount,
+        o.updated_at
     from orders as o
     left join order_payments as p on (o.order_id = p.order_id)
 )
 
-select * from final
+select 
+    * 
+from final
+
+{% if is_incremental() %}
+
+where updated_at >= (select max(updated_at) from {{ this }} )
+
+{% endif %}

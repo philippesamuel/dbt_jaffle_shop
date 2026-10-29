@@ -14,7 +14,8 @@ transformed as (
         case 
             when order_status not in ('returned', 'pending')
             then order_date
-        end as valid_order_date
+        end as valid_order_date,
+        _etl_loaded_at as updated_at
     from source
 
 )
