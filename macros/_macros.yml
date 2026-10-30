@@ -1,0 +1,25 @@
+macros:
+    - name: cents_to_dollars
+      description: "Converts cents to dollars"
+      arguments:
+        - name: column_name
+          description: "The name of the column containing an amount to be converted from cents to dollars"
+          type: string
+        - name: decimals
+          description: "The number of decimal places to round to"
+          type: integer
+    - name: grant_select
+      description: "Grants SELECT permissions to a role"
+      arguments:
+        - name: schema
+          description: "The name of the schema to grant SELECT permissions on"
+          type: string
+        - name: role
+          description: "The name of the role to grant SELECT permissions to"
+          type: string
+        - name: database
+          description: "The name of the database to grant SELECT permissions on"
+          type: string
+        - name: verbose
+          description: "Whether to log the SQL statement being executed"
+          type: boolean
